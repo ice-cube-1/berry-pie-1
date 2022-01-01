@@ -44,7 +44,7 @@ def CreateCSV(dataFile):
     with open(dataFile, 'w') as f:
         writer = csv.writer(f)
         header = ("Counter","Date/Time", "Latitude", "Longitude",
-                  "Classification", "ImageName")
+        "Classification", "ImageName")
         writer.writerow(header)
 
 
@@ -97,13 +97,12 @@ logfile(baseFolder/"events.log")
 #PiCamera.resolution = (1296,972)
 
 # nearly 3hr loop
-
 start = datetime.now(timezone.utc)
 timeNow = datetime.now(timezone.utc)
 
 counter = 0
 #below should be 30, but boring to test
-gapSecs = 4
+gapSecs = 30
 
 while (timeNow < start+timedelta(minutes=178)):
     try:
