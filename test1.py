@@ -56,22 +56,10 @@ def AddData(dataFile, data):
 
 
 def takePhoto(counter):
-    # after placeholder removed the line below needs to be 
-    # jpg instead of txt
-    # takes a photo
-    picName = "IMG"+str(counter).zfill(3)+".txt"
-    picFile = baseFolder/picName
-    captureMock(picFile)
+    picName = "IMG"+str(counter).zfill(3)+".jpg"
+    picFile = f"{baseFolder}/{picName}"
+    camera.capture(picFile)
     return(picName)
-
-
-def captureMock(picFile):
-    # captures the photo
-    # this takes the photos, called picFile. placeholder below:
-    # sleep will be removed, but it is there as a placeholder
-    with open(picFile, "w") as f:
-        f.write(str(counter))
-    sleep(1)
 
 
 def classificationMock(picName):
@@ -94,7 +82,7 @@ CreateCSV(dataFile)
 logfile(baseFolder/"events.log")
 
 # set up camera (uncomment in real thing)
-#PiCamera.resolution = (1296,972)
+camera = PiCamera()
 
 # nearly 3hr loop
 start = datetime.now(timezone.utc)
