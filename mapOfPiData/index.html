@@ -19,9 +19,7 @@
         var map;
         var icons;
 
-        console.log("ed is silly")
-        function init() {
-            console.log("ed is still silly")
+        async function init() {
             map = L.map('map').setView([0,0], 2);
             L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
                 attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
@@ -33,16 +31,14 @@
             }).addTo(map);
             icons = [0,1,2].map( n => L.icon({
                 iconUrl: n+'.png',
-                iconSize:     [16,16], // size of the icon
-                iconAnchor:   [8,8], // point of the icon which will correspond to marker's location
-                popupAnchor:  [0,-8] // point from which the popup should open relative to the iconAnchor
+                iconSize:     [16,16],
+                iconAnchor:   [8,8],
+                popupAnchor:  [0,-8]
             }));
             
-            //var marker = L.marker([51.5, -0.09]).addTo(map);
-
-            fetch('data.csv')
-            .then(response => response.text())
-            .then(data => processCSVData(data));
+            var response = await fetch('data.csv')
+            var data = await response.text();
+            processCSVData(data);            
         }
         window.onload = init
 
@@ -56,9 +52,9 @@
                 var classification = bits[4];
                 console.log(bits[2],bits[3]);
                 var marker = L.marker([lat,lon],{icon:icons[classification]}).addTo(map);
-                // marker.bindPopup('<img src="'+bits[5]+'/> ' + bits[5])
-                marker.bindPopup(`${bits[0]} at ${bits[1]} <br/> Image: ${bits[5]}<br/> Classification: ${bits[4]}`)
-
+                var imageName = 'data/'+bits[5];
+                var html = '<a href="'+imageName+'"><img height=120 width=192 src="'+imageName+'"/></a> <br/>' + bits[5] + ' ' + bits[4];
+                marker.bindPopup(html);
 
             }
         }
