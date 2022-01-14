@@ -1,31 +1,8 @@
-# This is the structure of the code for the experiment detecting wether
-# something is land, sea or sky. It works correctly in its current state
-# on a pi 4 running Flight OS (the operating system on the astro pi),
-# however I didn't have a camera attached, which is why some is commented
-# out (otherwise it would have had an error).
-# Where to add code:
-# - Emilia - the function capture is where it takes the photo, save it to
-#   "picfile" and it should work fine
-# - Izzy - Classification mock is for the AI bit, it takes in the file
-#    where the picture is (called picName) and returns "classification"
-#    a number between 0 and 2. Currently this number is generated randomly,
-#    but it will be changed.
-# - General note - there are a few sleeps, please delete them as they are
-#    just to simulate how long the functions that you are writing might
-#    take.
-# - Also - there is no way this will run without errors on codingrooms,
-#    when we zoom again I will run it on the pi but please don't edit the
-#    code to fix syntax errors on codingrooms, because they aren't actual
-#    errors, the importing is just weird.
-#
-# - Alice
-
-
 from orbit import ISS
 from pathlib import Path
 from numpy import random  # placeholder
 from datetime import datetime, timedelta, timezone
-from picamera import PiCamera #unused, but will be
+from picamera import PiCamera
 from logzero import logger, logfile
 from time import sleep
 import csv
@@ -66,7 +43,7 @@ def classificationMock(picName):
     # This is the AI bit. For now so that the rest of the code works,
     # There is a random number generator, obviously will be deleted.
     # The way it currently works is that one of 0,1,2 is
-    # land, sea and sky, but this can be changed.
+    # land, sea and sky, but this will be changed.
     classification = random.randint(0, 3)
     sleep(2)
     return classification
@@ -81,7 +58,7 @@ CreateCSV(dataFile)
 # errors.
 logfile(baseFolder/"events.log")
 
-# set up camera (uncomment in real thing)
+# set up camera
 camera = PiCamera()
 
 # nearly 3hr loop
@@ -89,7 +66,7 @@ start = datetime.now(timezone.utc)
 timeNow = datetime.now(timezone.utc)
 
 counter = 0
-#below should be 30, but boring to test
+#change this to test faster
 gapSecs = 30
 
 while (timeNow < start+timedelta(minutes=178)):
@@ -108,12 +85,11 @@ while (timeNow < start+timedelta(minutes=178)):
             )
         AddData(dataFile, data)
         logger.info(data)
+        
         #works out necessary time to sleep
         counter += 1
         endTime = datetime.now(timezone.utc)
         timeTaken = endTime-timeNow
-        #the print statements are unnessessary but useful for testing
-        print("this took", timeTaken.total_seconds(), "secs", data)
         if (timeTaken > timedelta(seconds=gapSecs)):
             print("this overran")
         else:
