@@ -6,6 +6,11 @@ from picamera import PiCamera
 from logzero import logger, logfile
 from time import sleep
 import csv
+from PIL import Image
+from pycoral.adapters import common
+from pycoral.adapters import classify
+from pycoral.utils.edgetpu import make_interpreter
+from pycoral.utils.dataset import read_label_file
 
 
 def getLocation():
@@ -21,7 +26,7 @@ def CreateCSV(dataFile):
     with open(dataFile, 'w') as f:
         writer = csv.writer(f)
         header = ("Counter","Date/Time", "Latitude", "Longitude",
-        "Classification", "ImageName")
+        "Classification","Classification probability", "ImageName")
         writer.writerow(header)
 
 
@@ -34,29 +39,39 @@ def AddData(dataFile, data):
 
 def takePhoto(counter):
     picName = "IMG"+str(counter).zfill(3)+".jpg"
-    picFile = f"{baseFolder}/{picName}"
+    picFile = f"{script_dir}/{picName}"
     camera.capture(picFile)
     return(picName)
 
 
-def classificationMock(picName):
-    # This is the AI bit. For now so that the rest of the code works,
-    # There is a random number generator, obviously will be deleted.
-    # The way it currently works is that one of 0,1,2 is
-    # land, sea and sky, but this will be changed.
-    classification = random.randint(0, 3)
-    sleep(2)
-    return classification
+def classification(picName):
+
+    image_file = picName
+    image = Image.open(image_file).convert('RGB').resize(size, Image.ANTIALIAS)
+    common.set_input(interpreter,image)
+    interpreter.invoke()
+    classes = classify.get_classes(interpreter, top_k=1)
+    labels = read_label_file(label_file)
+    for c in classes:
+        return(f'{labels.get(c.id, c.id)}',f'{c.score:.5f}')
+
+
+#initialize AI
+script_dir = Path(__file__).parent.resolve()
+model_file = script_dir/'astropi-land-vs-sea.tflite'
+label_file = script_dir/'data/land-vs-sea.txt'
+interpreter = make_interpreter(f"{model_file}")
+interpreter.allocate_tensors()
+size = common.input_size(interpreter)
 
 # set up CSV
-baseFolder = Path(__file__).parent.resolve()
-dataFile = baseFolder/"data.csv"
+dataFile = script_dir/"data.csv"
 CreateCSV(dataFile)
 
 # set up logfile, which collects the data in a harder to understand
 # format but will stay there if the program is restarted and holds
 # errors.
-logfile(baseFolder/"events.log")
+logfile(script_dir/"events.log")
 
 # set up camera
 camera = PiCamera()
@@ -74,13 +89,14 @@ while (timeNow < start+timedelta(minutes=178)):
         #add the data
         loc = getLocation()
         picName = takePhoto(counter)
-        classifation = classificationMock(picName)
+        classified = classification(picName)
         data = (
             str(counter).zfill(3),
             timeNow.isoformat(), 
             loc[0], 
             loc[1], 
-            classifation, 
+            classified[0],
+            classified[1],
             picName
             )
         AddData(dataFile, data)
@@ -90,11 +106,9 @@ while (timeNow < start+timedelta(minutes=178)):
         counter += 1
         endTime = datetime.now(timezone.utc)
         timeTaken = endTime-timeNow
-        if (timeTaken > timedelta(seconds=gapSecs)):
-            print("this overran")
-        else:
+        if (timeTaken < timedelta(seconds=gapSecs)):
             sleep(gapSecs-timeTaken.total_seconds())
-        timeNow = datetime.now(timezone.utc)
+            timeNow = datetime.now(timezone.utc)
 
     except Exception as e:
         logger.error(f'{e.__class__.__name__}:{e}')
