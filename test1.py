@@ -39,30 +39,45 @@ def AddData(dataFile, data):
 
 def takePhoto(counter):
     picName = "IMG"+str(counter).zfill(3)+".jpg"
-    picFile = f"{script_dir}/{picName}"
+    picFile = f"{script_dir}/data/{picName}"
     camera.capture(picFile)
-    return(picName)
+    return(picFile)
 
 
 def classification(picName):
 
     image_file = picName
-    image = Image.open(image_file).convert('RGB').resize(size, Image.ANTIALIAS)
-    common.set_input(interpreter,image)
-    interpreter.invoke()
-    classes = classify.get_classes(interpreter, top_k=1)
-    labels = read_label_file(label_file)
+    image = Image.open(image_file).convert('RGB').resize(size1, Image.ANTIALIAS)
+    common.set_input(interpreter1,image)
+    interpreter1.invoke()
+    classes = classify.get_classes(interpreter1, top_k=1)
+    labels = read_label_file(label_file1)
     for c in classes:
-        return(f'{labels.get(c.id, c.id)}',f'{c.score:.5f}')
-
+        pass1 = labels.get(c.id, c.id)
+    if pass1 == "unrandom":
+        image = Image.open(image_file).convert('RGB').resize(size2, Image.ANTIALIAS)
+        common.set_input(interpreter2,image)
+        interpreter2.invoke()
+        classes = classify.get_classes(interpreter2, top_k=1)
+        labels = read_label_file(label_file2)
+        for c in classes:
+            return(labels.get(c.id, c.id))
+    else:
+        return("random")
 
 #initialize AI
 script_dir = Path(__file__).parent.resolve()
-model_file = script_dir/'astropi-land-vs-sea.tflite'
-label_file = script_dir/'data/land-vs-sea.txt'
-interpreter = make_interpreter(f"{model_file}")
-interpreter.allocate_tensors()
-size = common.input_size(interpreter)
+model_file1 = script_dir/'pass1.tflite'
+label_file1 = script_dir/'pass1.txt'
+interpreter1 = make_interpreter(f"{model_file1}")
+interpreter1.allocate_tensors()
+size1 = common.input_size(interpreter1)
+model_file2 = script_dir/'pass2.tflite'
+label_file2 = script_dir/'pass2.txt'
+interpreter2 = make_interpreter(f"{model_file2}")
+interpreter2.allocate_tensors()
+size2 = common.input_size(interpreter2)
+
 
 # set up CSV
 dataFile = script_dir/"data.csv"
@@ -95,8 +110,7 @@ while (timeNow < start+timedelta(minutes=178)):
             timeNow.isoformat(), 
             loc[0], 
             loc[1], 
-            classified[0],
-            classified[1],
+            classified,
             picName
             )
         AddData(dataFile, data)

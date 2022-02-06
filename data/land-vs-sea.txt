@@ -1,3 +1,0 @@
-0 undefined
-1 land
-2 sea
