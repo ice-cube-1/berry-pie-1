@@ -1,6 +1,5 @@
 from orbit import ISS
 from pathlib import Path
-from numpy import random  # placeholder
 from datetime import datetime, timedelta, timezone
 from picamera import PiCamera
 from logzero import logger, logfile
@@ -14,7 +13,7 @@ from pycoral.utils.dataset import read_label_file
 
 
 def getLocation():
-    #gets the latitude andlongitude of the ISS
+    # gets the latitude andlongitude of the ISS
     location = ISS.coordinates()
     latitude = location.latitude.degrees
     longitude = location.longitude.degrees
@@ -22,22 +21,23 @@ def getLocation():
 
 
 def CreateCSV(dataFile):
-    #creates a CSV file
+    # creates a CSV file
     with open(dataFile, 'w') as f:
         writer = csv.writer(f)
         header = ("Counter","Date/Time", "Latitude", "Longitude",
-        "Classification","Classification probability", "ImageName")
+        "Classification", "ImageName")
         writer.writerow(header)
 
 
 def AddData(dataFile, data):
-    #adds data to the CSV file
+    # adds data to the CSV file
     with open(dataFile, "a") as f:
         writer = csv.writer(f)
         writer.writerow(data)
 
 
 def takePhoto(counter):
+    # takes the photo
     picName = "IMG"+str(counter).zfill(3)+".jpg"
     picFile = f"{script_dir}/data/{picName}"
     camera.capture(picFile)
@@ -45,7 +45,7 @@ def takePhoto(counter):
 
 
 def classification(picName):
-
+    # classifies the photo
     image_file = picName
     image = Image.open(image_file).convert('RGB').resize(size1, Image.ANTIALIAS)
     common.set_input(interpreter1,image)
@@ -65,7 +65,7 @@ def classification(picName):
     else:
         return("random")
 
-#initialize AI
+# initialize the AI
 script_dir = Path(__file__).parent.resolve()
 model_file1 = script_dir/'pass1.tflite'
 label_file1 = script_dir/'pass1.txt'
@@ -91,17 +91,15 @@ logfile(script_dir/"events.log")
 # set up camera
 camera = PiCamera()
 
-# nearly 3hr loop
+# sets the clock for the experiment
 start = datetime.now(timezone.utc)
 timeNow = datetime.now(timezone.utc)
-
 counter = 0
-#change this to test faster
 gapSecs = 30
 
 while (timeNow < start+timedelta(minutes=178)):
     try:
-        #add the data
+        # add the data
         loc = getLocation()
         picName = takePhoto(counter)
         classified = classification(picName)
@@ -116,7 +114,7 @@ while (timeNow < start+timedelta(minutes=178)):
         AddData(dataFile, data)
         logger.info(data)
         
-        #works out necessary time to sleep
+        # works out necessary time to sleep
         counter += 1
         endTime = datetime.now(timezone.utc)
         timeTaken = endTime-timeNow
@@ -124,5 +122,6 @@ while (timeNow < start+timedelta(minutes=178)):
             sleep(gapSecs-timeTaken.total_seconds())
             timeNow = datetime.now(timezone.utc)
 
+    # makes sure an error does not stop the whole code from running.
     except Exception as e:
         logger.error(f'{e.__class__.__name__}:{e}')
