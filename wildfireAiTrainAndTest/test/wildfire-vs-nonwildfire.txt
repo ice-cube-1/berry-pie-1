@@ -1,0 +1,2 @@
+0 nonwildfire
+1 wildfire

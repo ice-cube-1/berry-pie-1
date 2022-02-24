@@ -15,7 +15,7 @@ labelFileName = AIName+".txt"
 script_dir = Path(__file__).parent.resolve()
 model_file = script_dir/modelName
 data_dir = script_dir/"data"
-label_file = data_dir/labelFileName
+label_file = script_dir/labelFileName
 interpreter = make_interpreter(f"{model_file}")
 interpreter.allocate_tensors()
 

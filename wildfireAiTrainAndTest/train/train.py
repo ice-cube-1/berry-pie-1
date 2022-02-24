@@ -30,7 +30,7 @@ model_path = script_dir/'models'/'mobilenet_v1_1.0_224_l2norm_quant_edgetpu.tfli
 out_model_path = script_dir/'models'/'wildfire-vs-nonwildfire.tflite'
 #  specify where the labels and labelled training data are
 data_dir = script_dir/'data'
-labels_path = data_dir/'nonwildfire.txt'
+labels_path = data_dir/'wildfire-vs-nonwildfire.txt'
 
 '''
 Create an instance of `ImprintingEngine` by specifying a compatible 
