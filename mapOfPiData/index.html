@@ -29,12 +29,11 @@
                 zoomOffset: -1,
                 accessToken: 'pk.eyJ1IjoiaWNlLWN1YmUiLCJhIjoiY2t4dnlxMjc2MXJraDJybXAxYWl3bjVsaCJ9.w4NUd-As1zXlJ3V0JHBHxA'
             }).addTo(map);
-            icons = [0,1,2].map( n => L.icon({
-                iconUrl: n+'.png',
-                iconSize:     [16,16],
-                iconAnchor:   [8,8],
-                popupAnchor:  [0,-8]
-            }));
+            icons = {
+                random: L.icon({ iconUrl: '0.png', iconSize: [16,16], iconAnchor: [8,8], popupAnchor: [0,-8]}),
+                sea: L.icon({ iconUrl: '1.png', iconSize: [16,16], iconAnchor: [8,8], popupAnchor: [0,-8]}),
+                land: L.icon({ iconUrl: '2.png', iconSize: [16,16], iconAnchor: [8,8], popupAnchor: [0,-8]})
+            }
             
             var response = await fetch('data.csv')
             var data = await response.text();
@@ -43,7 +42,6 @@
         window.onload = init
 
         function processCSVData(data) {
-            //console.log(data);
             var lines = data.split("\n");
             for (let i = 1; i < lines.length; i++){
                 var bits = lines[i].split(",");
@@ -52,7 +50,7 @@
                 var classification = bits[4];
                 console.log(bits[2],bits[3]);
                 var marker = L.marker([lat,lon],{icon:icons[classification]}).addTo(map);
-                var imageName = 'data/'+bits[5];
+                var imageName = 'data/IMG'+bits[0]+'.jpg';
                 var html = '<a href="'+imageName+'"><img height=120 width=192 src="'+imageName+'"/></a> <br/>' + bits[5] + ' ' + bits[4];
                 marker.bindPopup(html);
 
@@ -63,7 +61,6 @@
 </head>
 
 <body>
-    Hello
     <div id="map"></div>
 </body>
 
