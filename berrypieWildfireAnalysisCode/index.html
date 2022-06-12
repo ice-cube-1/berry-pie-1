@@ -1,0 +1,66 @@
+<html>
+
+<head>
+    <style>
+        #map {
+            height: 800px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
+    <title>
+        Map1
+    </title>
+    <script>
+        var map;
+        var icons;
+
+        async function init() {
+            map = L.map('map').setView([0,0], 2);
+            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                maxZoom: 18,
+                id: 'mapbox/streets-v11',
+                tileSize: 512,
+                zoomOffset: -1,
+                accessToken: 'pk.eyJ1IjoiaWNlLWN1YmUiLCJhIjoiY2t4dnlxMjc2MXJraDJybXAxYWl3bjVsaCJ9.w4NUd-As1zXlJ3V0JHBHxA'
+            }).addTo(map);
+            icons = {
+                nonwildfire: L.icon({ iconUrl: '0.png', iconSize: [16,16], iconAnchor: [8,8], popupAnchor: [0,-8]}),
+                wildfire: L.icon({ iconUrl: '1.png', iconSize: [16,16], iconAnchor: [8,8], popupAnchor: [0,-8]}),
+            }
+            
+            var response = await fetch('data.csv')
+            var data = await response.text();
+            processCSVData(data);            
+        }
+        window.onload = init
+
+        function processCSVData(data) {
+            var lines = data.split("\n");
+            for (let i = 1; i < lines.length; i++){
+                var bits = lines[i].split(",");
+                var lat = bits[2];
+                var lon = bits[3];
+                var classification = bits[4];
+                console.log(bits[2],bits[3]);
+                var marker = L.marker([lat,lon],{icon:icons[classification]}).addTo(map);
+                var imageName = 'data/IMG'+bits[0]+'.jpg';
+                var html = '<a href="'+imageName+'"><img height=120 width=192 src="'+imageName+'"/></a> <br/>' + bits[5] + ' ' + bits[4];
+                marker.bindPopup(html);
+
+            }
+        }
+  
+    </script>
+</head>
+
+<body>
+    <div id="map"></div>
+</body>
+
+</html>
