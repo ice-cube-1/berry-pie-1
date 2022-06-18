@@ -50,8 +50,8 @@
                 var classification = bits[4];
                 console.log(bits[2],bits[3]);
                 var marker = L.marker([lat,lon],{icon:icons[classification]}).addTo(map);
-                var imageName = 'data/IMG'+bits[0]+'.jpg';
-                var html = '<a href="'+imageName+'"><img height=120 width=192 src="'+imageName+'"/></a> <br/>' + bits[5] + ' ' + bits[4];
+                var imageName = 'images/IMG'+bits[0]+'.jpg';
+                var html = '<a href="'+imageName+'"><img height=120 width=192 src="'+imageName+'"/></a> <br/>' + bits[0] + ' ' + bits[4];
                 marker.bindPopup(html);
 
             }
